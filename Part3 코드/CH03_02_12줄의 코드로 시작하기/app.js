@@ -1,10 +1,10 @@
-const container = document.getElementById("root");
+const container = document.getElementById('root');
 let ajax = new XMLHttpRequest();
-const content = document.createElement("div");
-const NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
-const CONTENT_URL = "https://api.hnpwa.com/v0/item/@id.json";
+const content = document.createElement('div');
+const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
+const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 
-function getData(url){
+function getData(url) {
   ajax.open('GET', url, false);
   ajax.send();
 
@@ -12,29 +12,34 @@ function getData(url){
 }
 
 const newsFeed = getData(NEWS_URL);
-const ul = document.createElement("ul");
+const ul = document.createElement('ul');
 
-window.addEventListener("hashchange", function () {
+window.addEventListener('hashchange', function () {
   const id = location.hash.substring(1);
 
-  const newsContent = getData(CONTENT_URL.replace("@id", id));
-  const title = document.createElement("h1");
-
-  title.innerHTML = newsContent.title;
-
-  content.appendChild(title);
+  const newsContent = getData(CONTENT_URL.replace('@id', id));
+  const title = document.createElement('h1');
+  container.innerHTML = '';
+  container.innerHTML = `
+    <h1>${newsContent.title}</h1>
+    <div>
+      <a href="#">목록으로</a>
+    </div>
+  `;
 });
 
-for (let i = 0; i < 10; i++) {
-  const div = document.createElement("div");
+const newsList = [];
 
-  div.innerHTML=`
+newsList.push('<ul>');
+
+for (let i = 0; i < 10; i++) {
+  newsList.push(`
     <li>
       <a href="#${newsFeed[i].id}">${newsFeed[i].title} (${newsFeed[i].comments_count})</a>
     </li>
-  `
-
-  ul.appendChild(div.firstElementChild) ;
+  `);
 }
-container.appendChild(ul);
+newsList.push('</ul>');
+
+container.innerHTML = newsList.join('');
 container.appendChild(content);
