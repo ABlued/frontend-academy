@@ -1,12 +1,12 @@
 const container = document.getElementById('root');
-let ajax = new XMLHttpRequest();
-const content = document.createElement('div');
+const ajax = new XMLHttpRequest();
 const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
-const PAGE_SIZE = 10;
 const store = {
   currentPage: 1,
+  feeds: [],
 };
+
 function getData(url) {
   ajax.open('GET', url, false);
   ajax.send();
@@ -14,8 +14,17 @@ function getData(url) {
   return JSON.parse(ajax.response);
 }
 
+function makeFeeds(feeds) {
+  for (let i = 0; i < feeds.length; i++) {
+    feeds[i].read = false;
+  }
+
+  return feeds;
+}
+
 function newsFeed() {
-  const newsFeed = getData(NEWS_URL);
+  const newsFeed = (store.feeds =
+    store.feeds.length !== 0 ? store.feeds : makeFeeds(getData(NEWS_URL)));
   const newsList = [];
   let template = `
     <div class="bg-gray-600 min-h-screen">
@@ -42,11 +51,7 @@ function newsFeed() {
     </div>
   `;
 
-  for (
-    let i = (store.currentPage - 1) * PAGE_SIZE;
-    i < store.currentPage * PAGE_SIZE;
-    i++
-  ) {
+  for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     newsList.push(`
       <div class="p-6 ${
         newsFeed[i].read ? 'bg-red-500' : 'bg-white'
@@ -77,10 +82,7 @@ function newsFeed() {
     '{{__prev_page__}}',
     store.currentPage > 1 ? store.currentPage - 1 : 1
   );
-  template = template.replace(
-    '{{__next_page__}}',
-    Math.min(store.currentPage + 1, newsFeed.length / PAGE_SIZE)
-  );
+  template = template.replace('{{__next_page__}}', store.currentPage + 1);
 
   container.innerHTML = template;
 }
@@ -117,6 +119,13 @@ function newsDetail() {
     </div>
   `;
 
+  for (let i = 0; i < store.feeds.length; i++) {
+    if (store.feeds[i].id === Number(id)) {
+      store.feeds[i].read = true;
+      break;
+    }
+  }
+
   function makeComment(comments, called = 0) {
     const commentString = [];
 
@@ -130,12 +139,15 @@ function newsDetail() {
           <p class="text-gray-700">${comments[i].content}</p>
         </div>      
       `);
+
       if (comments[i].comments.length > 0) {
         commentString.push(makeComment(comments[i].comments, called + 1));
       }
     }
+
     return commentString.join('');
   }
+
   container.innerHTML = template.replace(
     '{{__comments__}}',
     makeComment(newsContent.comments)
@@ -156,4 +168,5 @@ function router() {
 }
 
 window.addEventListener('hashchange', router);
+
 router();
