@@ -9,39 +9,20 @@ export class Api {
     this.url = url;
   }
 
-  getRequestWithXHR<AjaxResponse>(
-    callback: (data: AjaxResponse) => void
-  ): void {
-    this.xhr.open("GET", this.url);
-    this.xhr.addEventListener("load", () => {
-      callback(JSON.parse(this.xhr.response));
-    });
-    this.xhr.send();
-  }
-  getRequestWithPromise<AjaxResponse>(cb: (data: AjaxResponse) => void): void {
-    fetch(this.url)
-      .then((response) => response.json())
-      .then((data) => cb(data))
-      .catch((error) => console.log(error));
+  async request<AjaxResponse>(): Promise<AjaxResponse> {
+    const response = await fetch(this.url);
+    return await response.json();
   }
 }
 
 export class NewsFeedApi extends Api {
-  getData(callback: (data: NewsFeed[]) => void): void {
-    this.getRequestWithXHR<NewsFeed[]>(callback);
-  }
-
-  getDataWithPromise(callback: (data: NewsFeed[]) => void): void {
-    this.getRequestWithPromise<NewsFeed[]>(callback);
+  async getData(): Promise<NewsFeed[]> {
+    return await this.request<NewsFeed[]>();
   }
 }
 
 export class NewsDetailApi extends Api {
-  getData(callback: (data: NewsDetail) => void): void {
-    this.getRequestWithXHR<NewsDetail>(callback);
-  }
-
-  getDataWithPromise(callback: (data: NewsDetail) => void): void {
-    this.getRequestWithPromise<NewsDetail>(callback);
+  async getData(): Promise<NewsDetail> {
+    return await this.request<NewsDetail>();
   }
 }
