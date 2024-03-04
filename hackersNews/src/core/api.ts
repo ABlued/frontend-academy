@@ -1,31 +1,47 @@
 import { NewsDetail, NewsFeed } from "../types";
 
 export class Api {
-  ajax: XMLHttpRequest;
+  xhr: XMLHttpRequest;
   url: string;
 
   constructor(url: string) {
-    this.ajax = new XMLHttpRequest();
+    this.xhr = new XMLHttpRequest();
     this.url = url;
   }
 
-  getRequest<AjaxResponse>(callback: (data: AjaxResponse) => void): void {
-    this.ajax.open("GET", this.url);
-    this.ajax.addEventListener("load", () => {
-      callback(JSON.parse(this.ajax.response));
+  getRequestWithXHR<AjaxResponse>(
+    callback: (data: AjaxResponse) => void
+  ): void {
+    this.xhr.open("GET", this.url);
+    this.xhr.addEventListener("load", () => {
+      callback(JSON.parse(this.xhr.response));
     });
-    this.ajax.send();
+    this.xhr.send();
+  }
+  getRequestWithPromise<AjaxResponse>(cb: (data: AjaxResponse) => void): void {
+    fetch(this.url)
+      .then((response) => response.json())
+      .then((data) => cb(data))
+      .catch((error) => console.log(error));
   }
 }
 
 export class NewsFeedApi extends Api {
   getData(callback: (data: NewsFeed[]) => void): void {
-    this.getRequest<NewsFeed[]>(callback);
+    this.getRequestWithXHR<NewsFeed[]>(callback);
+  }
+
+  getDataWithPromise(callback: (data: NewsFeed[]) => void): void {
+    this.getRequestWithPromise<NewsFeed[]>(callback);
   }
 }
 
 export class NewsDetailApi extends Api {
   getData(callback: (data: NewsDetail) => void): void {
-    this.getRequest<NewsDetail>(callback);
+    this.getRequestWithXHR<NewsDetail>(callback);
+  }
+
+  getDataWithPromise(callback: (data: NewsDetail) => void): void {
+    this.getRequestWithPromise<NewsDetail>(callback);
   }
 }
