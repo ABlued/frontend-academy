@@ -9,22 +9,23 @@ export class Api {
     this.url = url;
   }
 
-  getRequest<AjaxResponse>(): AjaxResponse {
-    this.ajax.open("GET", this.url, false);
+  getRequest<AjaxResponse>(callback: (data: AjaxResponse) => void): void {
+    this.ajax.open("GET", this.url);
+    this.ajax.addEventListener("load", () => {
+      callback(JSON.parse(this.ajax.response));
+    });
     this.ajax.send();
-
-    return JSON.parse(this.ajax.response);
   }
 }
 
 export class NewsFeedApi extends Api {
-  getData(): NewsFeed[] {
-    return this.getRequest<NewsFeed[]>();
+  getData(callback: (data: NewsFeed[]) => void): void {
+    this.getRequest<NewsFeed[]>(callback);
   }
 }
 
 export class NewsDetailApi extends Api {
-  getData(): NewsDetail {
-    return this.getRequest<NewsDetail>();
+  getData(callback: (data: NewsDetail) => void): void {
+    this.getRequest<NewsDetail>(callback);
   }
 }
